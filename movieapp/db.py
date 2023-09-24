@@ -8,6 +8,8 @@ import click
 def get_db():
     # Set up mysql connection to database
     if 'db' not in g:
+        # UPDATE THIS LINE TO WORK WITH YOUR SAKILA DATABASE SERVER
+        # The string should be in the format "mysql+mysqlconnector://{user_name}:{password}@{host_system}:{port}/sakila"
         engine = create_engine("mysql+mysqlconnector://rkitson:PlatosRepublic777@localhost:3306/sakila")
         g.db = engine.connect()
         return g.db

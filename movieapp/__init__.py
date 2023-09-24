@@ -22,12 +22,8 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    #app.config['MYSQL_HOST'] = 'localhost'
-    #app.config['MYSQL_USER'] = 'rkitson'
-    #app.config['MYSQL_PASSWORD'] = 'PlatosRepublic777'
-    #app.config['MYSQL_DB'] = 'sakila'
-
-    #mysql = MySQL(app)
+    from . import index
+    app.register_blueprint(index.bp)
 
     @app.route('/hello')
     def hello():
