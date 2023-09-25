@@ -4,5 +4,56 @@
 {% endblock %}
 
 {% block content %}
-<h1>Hello from home</h1>
+<form action="#" method="post">
+    <label for="movie">Top 5 Rented Movies</label>
+    <select name="movie" id="movie" required size="5">
+      <option value="Bucket Brotherhood">Bucket Brotherhood</option>
+      <option value="Rocketeer Mother">Rocketeer Mother</option>
+      <option value="Scalawag Duck">Scalawag Duck</option>
+      <option value="Grit Clockwork">Grit Clockwork</option>
+      <option value="Forward Temple">Forward Temple</option>
+    </select>
+    <input type="submit" value="Get Details" />
+</form>
+
+{% for post in posts %}
+    <article class="post">
+        <dl>
+            <dt><b>Title</b></dt>
+            <dd>{{ post['title'] }}</dd>
+            <dt><b>Description</b></dt>
+            <dd>{{ post['description'] }}</dd>
+            <dt><b>Year of Release</b></dt>
+            <dd>{{ post['release_year'] }}</dd>
+            <dt><b>Length in Minutes</b></dt>
+            <dd>{{ post['length'] }}</dd>
+            <dt><b>Rating</b></dt>
+            <dd>{{ post['rating'] }}</dd>
+        </dl>
+    </article>
+{% endfor %}
+
+<form action="#" method="post">
+    <label for="actors">Top 5 Actors</label>
+    <select name="actors" id="actors" required size="5">
+      <option value="Gina Degeneres">Gina Degeneres</option>
+      <option value="Walter Torn">Walter Torn</option>
+      <option value="Mary Keitel">Mary Keitel</option>
+      <option value="Matthew Carrey">Matthew Carrey</option>
+      <option value="Sandra Kilmer">Sandra Kilmer</option>
+    </select>
+    <input type="submit" value="Get Details" />
+</form>
+
+{% for actor in actors %}
+    <article class="post">
+        <dl>
+            <dt><b>Film Name</b></dt>
+            <dd>{{ actor['title'] }}</dd>
+            <dt><b>Number Rented</b></dt>
+            <dd>{{ actor['rented'] }}</dd>
+        </dl>
+    </article>
+{% endfor %}
+
 {% endblock %}
