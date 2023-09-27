@@ -5,13 +5,11 @@
 
 {% block content %}
 <form action="#" method="post">
-    <label for="movie">Top 5 Rented Movies</label>
+    <label for="movie">Top 5 Rented Movies & Rent Count</label>
     <select name="movie" id="movie" required size="5">
-      <option value="Bucket Brotherhood">Bucket Brotherhood</option>
-      <option value="Rocketeer Mother">Rocketeer Mother</option>
-      <option value="Scalawag Duck">Scalawag Duck</option>
-      <option value="Grit Clockwork">Grit Clockwork</option>
-      <option value="Forward Temple">Forward Temple</option>
+      {% for movie in tmovies %}
+      <option value="{{ movie['title'] }}">{{ movie['title'] }} ({{ movie['rented'] }})</option>
+      {% endfor %}
     </select>
     <input type="submit" value="Get Details" />
 </form>
@@ -34,13 +32,11 @@
 {% endfor %}
 
 <form action="#" method="post">
-    <label for="actors">Top 5 Actors</label>
+    <label for="actors">Top 5 Actors & Movie Count</label>
     <select name="actors" id="actors" required size="5">
-      <option value="Gina Degeneres">Gina Degeneres</option>
-      <option value="Walter Torn">Walter Torn</option>
-      <option value="Mary Keitel">Mary Keitel</option>
-      <option value="Matthew Carrey">Matthew Carrey</option>
-      <option value="Sandra Kilmer">Sandra Kilmer</option>
+      {% for tactor in tactors %}
+      <option value="{{ tactor['first_name'] }} {{ tactor['last_name'] }}">{{ tactor['first_name'] }} {{ tactor['last_name'] }} ({{ tactor['movies'] }})</option>
+      {% endfor %}
     </select>
     <input type="submit" value="Get Details" />
 </form>

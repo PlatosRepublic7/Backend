@@ -9,14 +9,21 @@ bp = Blueprint('index' ,__name__, url_prefix='/index')
 # Create different routes for each of the pages, and define the functionality of each
 @bp.route('/home', methods=('GET', 'POST'))
 def home():
+    db = get_db()
+    # Queries for intial/updated form population
+    top_movies = db.execute(text('SELECT film.title, COUNT(rental.return_date) AS "rented" FROM ((rental INNER JOIN inventory ON rental.inventory_id = inventory.inventory_id) INNER JOIN film ON inventory.film_id = film.film_id)'\
+                                'WHERE rental.return_date IS NOT NULL GROUP BY film.title ORDER BY rented DESC LIMIT 5'))
+    top_actors = db.execute(text('SELECT actor.actor_id, actor.first_name, actor.last_name, COUNT(*) AS "movies" FROM ((actor INNER JOIN film_actor ON actor.actor_id = film_actor.actor_id)'\
+                                'INNER JOIN film ON film.film_id = film_actor.film_id) GROUP BY actor.actor_id ORDER BY movies DESC LIMIT 5'))
+    
+    # Handle form submissions
     if request.method == 'POST':
-        db = get_db()
         if "movie" in request.form:
             movie = request.form['movie']
         
             movie_res = db.execute(text('SELECT title, description, release_year, length, rating FROM film WHERE film.title="{}"'.format(movie)))
 
-            return render_template('index/home.html', posts=movie_res)
+            return render_template('index/home.html', posts=movie_res, tmovies = top_movies, tactors = top_actors)
         elif "actors" in request.form:
             actor = request.form['actors']
             name = actor.split()
@@ -24,9 +31,10 @@ def home():
                                     'INNER JOIN film ON inventory.film_id = film.film_id) INNER JOIN film_actor ON film.film_id = film_actor.film_id)' \
                                     'INNER JOIN actor ON film_actor.actor_id = actor.actor_id) WHERE rental.return_date IS NOT NULL AND actor.first_name = "{}" AND actor.last_name = "{}"' \
                                     'GROUP BY film.title ORDER BY rented DESC LIMIT 5'.format(name[0], name[1])))
-            return render_template('index/home.html', actors=actor_res)
+            return render_template('index/home.html', actors=actor_res, tmovies = top_movies, tactors = top_actors)
     else:
-        return render_template('index/home.html')
+        return render_template('index/home.html', tmovies = top_movies, tactors = top_actors)
+
 
 @bp.route('/movies', methods=('GET', 'POST'))
 def movies():
