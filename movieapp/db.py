@@ -1,5 +1,4 @@
-from flask import current_app, g
-from flask_sqlalchemy import SQLAlchemy
+from flask import g
 from sqlalchemy import create_engine
 import click
 
@@ -27,18 +26,6 @@ def init_app(app):
 def init_db():
     db = get_db()
     return db
-
-def make_query(cnx):
-    cursor = cnx.cursor()
-    query = "SELECT COUNT(*) FROM film;"
-
-    cursor.execute(query)
-    for num in cursor:
-        out_string = "Entries in film: {}".format(num)
-
-    cursor.close()
-
-    return out_string
 
 @click.command('init-db')
 def init_db_command():

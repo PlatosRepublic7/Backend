@@ -26,12 +26,12 @@ def create_app(test_config=None):
 
     from . import db
 
-    # For getting raw query data -- FOR TESTING ONLY
+    # For getting raw query data -- FOR QUERY VALIDATION ONLY
     @app.route('/sqla')
     def sqlquery():
         r_list = []
         cnx = db.get_db()
-        result = cnx.execute(text('SELECT actor.first_name, actor.last_name, film.title, COUNT(rental.return_date) AS "rented" FROM ((((rental INNER JOIN inventory ON rental.inventory_id = inventory.inventory_id) INNER JOIN film ON inventory.film_id = film.film_id) INNER JOIN film_actor ON film.film_id = film_actor.film_id) INNER JOIN actor ON film_actor.actor_id = actor.actor_id) WHERE rental.return_date IS NOT NULL AND actor.first_name = "GINA" AND actor.last_name = "DEGENERES" GROUP BY film.title ORDER BY rented DESC LIMIT 5'))
+        result = cnx.execute(text('SELECT title, description, release_year, length, rating FROM film WHERE film.title="CAT CONEHEADS"'))
         for row in result.mappings():
             r_list.append(row)
         db.close_db()

@@ -4,5 +4,74 @@
 {% endblock %}
 
 {% block content %}
-<h1>Hello from Movies</h1>
+<form>
+    <div>
+        <label for="titleSearch">Search By Title</label>
+        <input
+            type="search"
+            id="titleSearch"
+            name="titleq"
+            placeholder="Enter Title"
+            required
+            size="30" />
+        <button>Search</button>
+        <span class="validity"></span>
+    </div>
+</form>
+
+<form>
+    <div>
+        <label for="actorSearch">Search By Actor</label>
+        <input
+            type="search"
+            id="actorSearch"
+            name="actorq"
+            placeholder="Enter First and Last Name"
+            required
+            size="30" />
+        <button>Search</button>
+        <span class="validity"></span>
+    </div>
+</form>
+<form>
+    <div>
+        <label for="genreSearch">Search By Genre</label>
+        <input
+            type="search"
+            id="genreSearch"
+            name="genreq"
+            placeholder="Enter Genre"
+            required
+            size="30" />
+        <button>Search</button>
+        <span class="validity"></span>
+    </div>
+</form>
+
+<form method="post">
+    <label for="sresults"> Movie Results: {{ stitle }}</label>
+    <select name="sresults" id="sresults" required size="5">
+      {% for result in results %}
+      <option value="{{ result['title'] }}">{{ result['title'] }}</option>
+      {% endfor %}
+    </select>
+    <input type="submit" value="Get Details" />
+</form>
+
+{% if fields %}
+{% for field in fields %}
+<dl>
+    <dt><b>Title</b></dt>
+    <dd>{{ film_title }}</dd>
+    <dt><b>Description</b></dt>
+    <dd>{{ field['description'] }}</dd>
+    <dt><b>Year of Release</b></dt>
+    <dd>{{ field['release_year'] }}</dd>
+    <dt><b>Length in Minutes</b></dt>
+    <dd>{{ field['length'] }}</dd>
+    <dt><b>Rating</b></dt>
+    <dd>{{ field['rating'] }}</dd>
+</dl>
+{% endfor %}
+{% endif %}
 {% endblock %}

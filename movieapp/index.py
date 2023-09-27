@@ -30,8 +30,46 @@ def home():
 
 @bp.route('/movies', methods=('GET', 'POST'))
 def movies():
-    return render_template('index/movies.html')
+    db = get_db()
+    
+    if request.method == 'GET':
+        if request.args.get('titleq'):
+            stext = request.args.get('titleq')
+            db_res = db.execute(text('SELECT title FROM film WHERE film.title="{}"'.format(stext)))
+            
+            return render_template('index/movies.html', results=db_res, stitle = stext)
+
+        elif request.args.get('actorq'):
+            stext = request.args.get('actorq')
+            slist = stext.split()
+            db_res = db.execute(text('SELECT film.title FROM ((actor INNER JOIN film_actor ON actor.actor_id = film_actor.actor_id)'\
+                                    'INNER JOIN film ON film_actor.film_id = film.film_id) WHERE actor.first_name = "{}" AND actor.last_name = "{}"'.format(slist[0], slist[1])))
+            
+            return render_template('index/movies.html', results=db_res, stitle = stext)
+        
+        elif request.args.get('genreq'):
+            stext = request.args.get('genreq')
+            db_res = db.execute(text('SELECT film.title, category.name AS "genre" FROM ((film_category INNER JOIN category ON film_category.category_id = category.category_id)' \
+                                    'INNER JOIN film ON film.film_id = film_category.film_id) WHERE category.name = "{}"'.format(stext)))
+            
+            return render_template('index/movies.html', results=db_res, stitle = stext)
+        
+        else:            
+            return render_template('index/movies.html')
+    
+    elif request.method == 'POST':
+        if 'sresults' in request.form:
+            movie = request.form['sresults']
+            movie_res = db.execute(text('SELECT title, description, release_year, length, rating FROM film WHERE film.title="{}"'.format(movie)))
+
+            return render_template('index/movies.html', fields = movie_res, film_title = movie)
+        else:
+            return render_template('index/movies.html')
+
 
 @bp.route('/customers', methods=('GET', 'POST'))
 def customers():
-    return render_template('index/customers.html')
+    db = get_db()
+    customer_list = db.execute(text('SELECT customer.customer_id, customer.first_name, customer.last_name FROM customer'))
+
+    return render_template('index/customers.html', customers = customer_list)
