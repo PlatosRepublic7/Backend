@@ -24,9 +24,9 @@ def create_app(test_config=None):
     from . import index
     app.register_blueprint(index.bp)
 
+    # For getting raw query data -- FOR QUERY VALIDATION ONLY
     from . import db
 
-    # For getting raw query data -- FOR QUERY VALIDATION ONLY
     @app.route('/sqla')
     def sqlquery():
         r_list = []

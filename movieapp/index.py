@@ -7,6 +7,7 @@ from sqlalchemy import text
 bp = Blueprint('index' ,__name__, url_prefix='/index')
 
 # Create different routes for each of the pages, and define the functionality of each
+# Home/Landing Page
 @bp.route('/home', methods=('GET', 'POST'))
 def home():
     db = get_db()
@@ -36,10 +37,12 @@ def home():
         return render_template('index/home.html', tmovies = top_movies, tactors = top_actors)
 
 
+# Movies Page
 @bp.route('/movies', methods=('GET', 'POST'))
 def movies():
     db = get_db()
     
+    # Search Field Handling
     if request.method == 'GET':
         if request.args.get('titleq'):
             stext = request.args.get('titleq')
@@ -65,6 +68,7 @@ def movies():
         else:            
             return render_template('index/movies.html')
     
+    # Results and Details Handling
     elif request.method == 'POST':
         if 'sresults' in request.form:
             movie = request.form['sresults']
@@ -75,9 +79,51 @@ def movies():
             return render_template('index/movies.html')
 
 
+# Customers Page
 @bp.route('/customers', methods=('GET', 'POST'))
 def customers():
     db = get_db()
     customer_list = db.execute(text('SELECT customer.customer_id, customer.first_name, customer.last_name FROM customer'))
 
+    # Search Field and Customer List Population Handling
+    if request.method == 'GET':
+        
+        if request.args.get('customerq'):
+            stext = request.args.get('customerq')
+            
+            if stext is None:
+                return render_template('index/customers.html', customers = customer_list)
+            
+            elif stext.isnumeric():
+                db_search = db.execute(text('SELECT customer.customer_id, customer.first_name, customer.last_name FROM customer WHERE customer.customer_id = {}'.format(stext)))
+                
+            else:
+                db_search = db.execute(text('SELECT customer.customer_id, customer.first_name, customer.last_name FROM customer WHERE '\
+                                             'customer.first_name = "{}" OR customer.last_name = "{}"'.format(stext, stext)))
+
+            return render_template('index/customers.html', customers = db_search)
+    
+    # Details Editing Form Handling
+    elif request.method == 'POST':
+        if 'clist' in request.form:
+            customer = request.form['clist']
+            clist = customer.split()
+            c_res = db.execute(text('SELECT customer.store_id, customer.customer_id, customer.first_name, customer.last_name, customer.email, customer.active FROM customer' \
+                                    ' WHERE customer.first_name = "{}" AND customer.last_name = "{}"'.format(clist[0], clist[1] )))
+
+            return render_template('index/customers.html', c_details = c_res)
+        if 'edit_form' in request.form:
+            c_store_id = request.form['store_id']
+            c_id = request.form['customer_id']
+            first_name = request.form['first_name']
+            last_name = request.form['last_name']
+            email = request.form['email']
+            isactive = request.form['active']
+            db.execute(text('UPDATE customer SET store_id = {}, first_name = {}, last_name = {}, email = {}, active = {} '\
+                            'WHERE customer.customer_id = {}'.format(c_store_id, first_name, last_name, email, isactive, c_id)))
+            db.commit()
+            success_string = "Saved Customer Information"
+            
+            return render_template('index/customers.html', customers = customer_list, success = success_string)
+        
     return render_template('index/customers.html', customers = customer_list)
