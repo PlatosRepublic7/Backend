@@ -105,25 +105,43 @@ def customers():
     
     # Details Editing Form Handling
     elif request.method == 'POST':
-        if 'clist' in request.form:
-            customer = request.form['clist']
+
+        # Get Dictionary keys and values from POST request and gather them into a list (flash them for testing)
+        form_keys = []
+        is_edit_form = False     
+        for k, v in request.form.items():
+            form_keys.append({k: v})
+            if k == 'store_id':
+                is_edit_form = True
+        flash(form_keys)
+        
+        if 'clist' in form_keys[0]:
+            customer = form_keys[0]['clist']
             clist = customer.split()
             c_res = db.execute(text('SELECT customer.store_id, customer.customer_id, customer.first_name, customer.last_name, customer.email, customer.active FROM customer' \
                                     ' WHERE customer.first_name = "{}" AND customer.last_name = "{}"'.format(clist[0], clist[1] )))
 
             return render_template('index/customers.html', c_details = c_res)
-        if 'edit_form' in request.form:
-            c_store_id = request.form['store_id']
-            c_id = request.form['customer_id']
-            first_name = request.form['first_name']
-            last_name = request.form['last_name']
-            email = request.form['email']
-            isactive = request.form['active']
-            db.execute(text('UPDATE customer SET store_id = {}, first_name = {}, last_name = {}, email = {}, active = {} '\
-                            'WHERE customer.customer_id = {}'.format(c_store_id, first_name, last_name, email, isactive, c_id)))
+        
+        if is_edit_form:
+            for tag in form_keys:
+                if 'store_id' in tag:
+                    c_store_id = tag['store_id']
+                elif 'customer_id' in tag:
+                    c_id = tag['customer_id']
+                elif 'first_name' in tag:
+                    first_name = tag['first_name']
+                elif 'last_name' in tag:
+                    last_name = tag['last_name']
+                elif 'email' in tag:
+                    email = tag['email']
+                elif 'active' in tag:
+                    isactive = tag['active']
+            db.execute(text('UPDATE customer SET store_id = "{}", first_name = "{}", last_name = "{}", email = "{}", active = "{}" '\
+                            'WHERE customer.customer_id = "{}"'.format(c_store_id, first_name, last_name, email, isactive, c_id)))
             db.commit()
-            success_string = "Saved Customer Information"
+            customer_list = db.execute(text('SELECT customer.customer_id, customer.first_name, customer.last_name FROM customer'))
             
-            return render_template('index/customers.html', customers = customer_list, success = success_string)
+            return render_template('index/customers.html', customers = customer_list)
         
     return render_template('index/customers.html', customers = customer_list)

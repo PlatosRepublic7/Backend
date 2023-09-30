@@ -33,20 +33,20 @@
 <div style="margin:auto; display:inline-block; width: 40%;">
 {% if c_details %}
 {% for c in c_details %}
-<form method="post" id="edit_form">
+<form method="post" id="edit_form" name="edit_form">
     <label>Customer Details</label>
-    <label for="SID">Store ID</label>
-    <input type="text" id="store_id" name="SID" value="{{ c['store_id'] }}">
-    <label for="CID">Customer ID</label>
-    <input type="text" id="customer_id" name="CID" value="{{ c['customer_id'] }}">
-    <label for="FirstName">First Name</label>
-    <input type="text" id="first_name" name="FirstName" value="{{ c['first_name'] }}">
-    <label for="LastName">Last Name</label>
-    <input type="text" id="last_name" name="LastName" value="{{ c['last_name'] }}">
-    <label for="EMail">E-Mail</label>
-    <input type="text" id="email" name="EMail" value="{{ c['email'] }}">
-    <label for="Active">Is Active (1 = Yes, 0 = No)</label>
-    <input type="text" id="active" name="Active" value="{{ c['active'] }}">
+    <label for="store_id">Store ID</label>
+    <input type="text" id="store_id" name="store_id" value="{{ c['store_id'] }}">
+    <label for="customer_id">Customer ID</label>
+    <input type="text" id="customer_id" name="customer_id" value="{{ c['customer_id'] }}">
+    <label for="first_name">First Name</label>
+    <input type="text" id="first_name" name="first_name" value="{{ c['first_name'] }}">
+    <label for="last_name">Last Name</label>
+    <input type="text" id="last_name" name="last_name" value="{{ c['last_name'] }}">
+    <label for="email">E-Mail</label>
+    <input type="text" id="email" name="email" value="{{ c['email'] }}">
+    <label for="active">Is Active (1 = Yes, 0 = No)</label>
+    <input type="text" id="active" name="active" value="{{ c['active'] }}">
     <input type="submit" value="Edit Details"/>
 </form>
 {% endfor %}
