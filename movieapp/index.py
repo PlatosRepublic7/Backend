@@ -137,9 +137,11 @@ def customers():
                     email = tag['email']
                 elif 'active' in tag:
                     isactive = tag['active']
+            
             db.execute(text('UPDATE customer SET store_id = "{}", first_name = "{}", last_name = "{}", email = "{}", active = "{}" '\
                             'WHERE customer.customer_id = "{}"'.format(c_store_id, first_name, last_name, email, isactive, c_id)))
             db.commit()
+            
             customer_list = db.execute(text('SELECT customer.customer_id, customer.first_name, customer.last_name FROM customer'))
             
             return render_template('index/customers.html', customers = customer_list)
