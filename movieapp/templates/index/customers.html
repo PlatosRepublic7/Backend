@@ -4,20 +4,68 @@
 {% endblock %}
 
 {% block content %}
-<div class = "form-center">
+{% if not add_cust %}
+<div class="form-center">
 <form>
+    <input id="add_cust" name="add_cust" type="submit" value="Add Customer"/>
+</form>
+</div>
+{% endif %}
+<div class="form-center">
+{% if add_cust %}
+{% for c_id in db_count %}
+<form method="post" id="c_add_form" name="c_add_form">
+    <label>Customer Details</label>
+    <label for="a_store_id">Store ID</label>
+    <input type="text" id="a_store_id" name="a_store_id" placeholder="1 or 2" required>
+    <label for="a_customer_id">Customer ID</label>
+    <input type="text" id="a_customer_id" name="a_customer_id" value="{{ c_id['customer_id'] + 1}}" readonly>
+    <label for="a_first_name">First Name</label>
+    <input type="text" id="a_first_name" name="a_first_name" placeholder="First Name" required>
+    <label for="a_last_name">Last Name</label>
+    <input type="text" id="a_last_name" name="a_last_name" placeholder="Last Name" required>
+    <label for="a_email">E-Mail</label>
+    <input type="text" id="a_email" name="a_email" placeholder="E-Mail" required>
+    <label for="a_active">Is Active</label>
+    <input type="text" id="a_active" name="a_active" value="1"  readonly>
+    <label for="a_address">Address</label>
+    <input type="text" id="a_address" name="a_address" placeholder="Address" required>
+    <label for="a_city">City</label>
+    <input type="text" id="a_city" name="a_city" placeholder="City" required>
+    <label for="a_district">District</label>
+    <input type="text" id="a_district" name="a_district" placeholder="District" required>
+    <label for="a_postal_code">Postal Code</label>
+    <input type="text" id="a_postal_code" name="a_postal_code" placeholder="Postal Code" required>
+    <label for="a_phone">Phone</label>
+    <input type="text" id="a_phone" name="a_phone" placeholder="Phone" required>
+    <input type="submit" value="Confirm Customer Details"/>
+</form>
+</div>
+<div class="form-center">
+    <form id="cancel_add_form" name="cancel_add_form">
+    <input type="submit" id="cancel_add" name="cancel_add" value="Cancel"/>
+    </form>
+</div>
+{% endfor %}
+{% endif %}
+
+<span>
+<div class = "form-center" style="display: block; text-align: center;">
+<form style="display: inline-block;">
     <input
+        style="width: 70%;"
         type="search"
         id="custSearch"
         name="customerq"
-        placeholder="Enter Customer ID, First Name, Or Last Name, Or Click Search For All" 
+        placeholder="Enter Customer ID, First Name, Or Last Name" 
         size="60" />
-        <button>Search</button>
+        <button style="width: 35%; display: inline;">Search</button>
     <span class="validity"></span>
 </form>
 </div>
 
-<div style="margin:auto; display:inline-block; width: 35%;">
+
+<div class="form-center" style="margin:auto; width: 35%;">
 <form method="post">
     <label for="clist"> Customer List (Customer ID)</label>
     <select name="clist" id="clist" required size="15" size="30">
@@ -28,6 +76,7 @@
     <input type="submit" value="Get Details"/>
 </form>
 </div>
+</span>
 
 
 <div style="margin:auto; display:inline-block; width: 40%;">
@@ -38,7 +87,7 @@
     <label for="store_id">Store ID</label>
     <input type="text" id="store_id" name="store_id" value="{{ c['store_id'] }}">
     <label for="customer_id">Customer ID</label>
-    <input type="text" id="customer_id" name="customer_id" value="{{ c['customer_id'] }}">
+    <input type="text" id="customer_id" name="customer_id" value="{{ c['customer_id'] }}" readonly>
     <label for="first_name">First Name</label>
     <input type="text" id="first_name" name="first_name" value="{{ c['first_name'] }}">
     <label for="last_name">Last Name</label>
@@ -47,6 +96,16 @@
     <input type="text" id="email" name="email" value="{{ c['email'] }}">
     <label for="active">Is Active (1 = Yes, 0 = No)</label>
     <input type="text" id="active" name="active" value="{{ c['active'] }}">
+    <label for="active">Address</label>
+    <input type="text" id="address" name="address" value="{{ c['address'] }}">
+    <label for="active">City</label>
+    <input type="text" id="city" name="city" value="{{ c['city'] }}">
+    <label for="active">District</label>
+    <input type="text" id="district" name="district" value="{{ c['district'] }}">
+    <label for="active">Postal Code</label>
+    <input type="text" id="postal_code" name="postal_code" value="{{ c['postal_code'] }}">
+    <label for="active">Phone Number</label>
+    <input type="text" id="phone" name="phone" value="{{ c['phone'] }}">
     <input type="submit" value="Edit Details"/>
 </form>
 {% endfor %}

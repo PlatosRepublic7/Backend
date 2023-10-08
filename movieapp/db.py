@@ -29,7 +29,7 @@ def get_db():
         g.db = engine.connect()
         return g.db
 
-        
+
 
 # NOT USED (YET?)
 def close_db(e=None):
