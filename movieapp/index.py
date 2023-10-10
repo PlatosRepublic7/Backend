@@ -73,11 +73,54 @@ def movies():
     
     # Results and Details Handling
     elif request.method == 'POST':
-        if 'sresults' in request.form:
+        form_keys = []
+        rent_movie = False
+        confirm_rental = False
+        for k, v in request.form.items():
+            form_keys.append({k:v})
+            if k == 'rent_movie':
+                rent_movie = True
+            elif k == 'm_title':
+                confirm_rental = True
+        
+        flash(form_keys)
+
+        if rent_movie:
+            movie_info = db.execute(text('SELECT film.title, film.film_id FROM film WHERE film.title = "{}"'.format(form_keys[0]['sresults'])))
+
+            return render_template('index/movies.html', m_info = movie_info)
+
+        elif confirm_rental:
+            for tag in form_keys:
+                if 'm_c_id' in tag:
+                    cust_id = tag['m_c_id']
+                elif 'm_title' in tag:
+                    m_title = tag['m_title']
+                elif 'm_first_name' in tag:
+                    m_first_name = tag['m_first_name']
+                elif 'm_last_name' in tag:
+                    m_last_name = tag['m_last_name']
+                
+            if cust_id == "":
+                cid = db.execute(text('SELECT customer.customer_id FROM customer WHERE customer.first_name = "{}" AND customer.last_name = "{}"'.format(m_first_name, m_last_name)))
+                db.execute(text('INSERT INTO rental (rental_date, inventory_id, customer_id, staff_id)'\
+                                ' VALUES (now(), (SELECT inventory_id FROM (inventory INNER JOIN film ON'\
+                                ' inventory.film_id = film.film_id) WHERE film.title = "{}" LIMIT 1), {}, 1)'.format(m_title, cid)))
+                db.commit()
+            else:
+                db.execute(text('INSERT INTO rental (rental_date, inventory_id, customer_id, staff_id)'\
+                                ' VALUES (now(), (SELECT inventory_id FROM (inventory INNER JOIN film ON'\
+                                ' inventory.film_id = film.film_id) WHERE film.title = "{}" LIMIT 1), {}, 1)'.format(m_title, cust_id)))
+                db.commit()
+            
+            return render_template('index/movies.html')
+
+        elif 'sresults' in request.form:
             movie = request.form['sresults']
             movie_res = db.execute(text('SELECT title, description, release_year, length, rating FROM film WHERE film.title="{}"'.format(movie)))
 
             return render_template('index/movies.html', fields = movie_res, film_title = movie)
+        
         else:
             return render_template('index/movies.html')
 
@@ -139,27 +182,36 @@ def customers():
         form_keys = []
         is_edit_form = False 
         is_add_form = False
+        delete_customer = False
+        return_movie = False
         for k, v in request.form.items():
             form_keys.append({k: v})
             if k == 'store_id':
                 is_edit_form = True
             elif k == 'a_store_id':
                 is_add_form = True
+            elif k == 'delete_cust':
+                delete_customer = True
+            elif k == 'return_movie_list':
+                return_movie = True
         flash(form_keys)
         
         # Customer List Logic and query
         if 'clist' in form_keys[0]:
             customer = form_keys[0]['clist']
             clist = customer.split()
-           # c_res = db.execute(text('SELECT customer.store_id, customer.customer_id, customer.first_name, customer.last_name, customer.email, customer.active FROM customer' \
-            #                        ' WHERE customer.first_name = "{}" AND customer.last_name = "{}"'.format(clist[0], clist[1] )))
 
             # Updated SELECT query, this grabs all the needed information about a customer, and serves as a template for the info needed for DB insertion
             c_res = db.execute(text('SELECT customer.store_id, customer.customer_id, customer.first_name, customer.last_name, customer.email, customer.active, '\
                                     'address.address, city.city, address.district, address.postal_code, address.phone FROM ((customer INNER JOIN address ON customer.address_id = address.address_id) INNER JOIN city ON address.city_id = city.city_id)'\
                                     ' WHERE customer.first_name = "{}" AND customer.last_name = "{}"'.format(clist[0], clist[1] )))
             
-            return render_template('index/customers.html', c_details = c_res)
+            # This query gets all the films that the customer has rented out previously
+            c_rented_movies = db.execute(text('SELECT rental.rental_id, rental.inventory_id, film.film_id, film.title, customer.customer_id, rental.return_date '\
+                                              'FROM (((rental INNER JOIN inventory ON rental.inventory_id = inventory.inventory_id) INNER JOIN film ON film.film_id = inventory.film_id) INNER JOIN customer ON rental.customer_id = customer.customer_id) '\
+                                              'WHERE customer.first_name = "{}" AND customer.last_name = "{}" ORDER BY return_date'.format(clist[0], clist[1])))
+            
+            return render_template('index/customers.html', c_details = c_res, c_rented = c_rented_movies)
         
         # If edit form is submitted, perform UPDATE query in db
         if is_edit_form:
@@ -176,14 +228,31 @@ def customers():
                     email = tag['email']
                 elif 'active' in tag:
                     isactive = tag['active']
-            
-            db.execute(text('UPDATE customer SET store_id = "{}", first_name = "{}", last_name = "{}", email = "{}", active = "{}" '\
-                            'WHERE customer.customer_id = "{}"'.format(c_store_id, first_name, last_name, email, isactive, c_id)))
-            db.commit()
+
+            # If the DELETE button was pressed, delete customer from database, otherwise UPDATE button was pressed
+            if delete_customer:
+                db.execute(text('DELETE FROM customer WHERE customer_id = {}'.format(c_id)))
+                db.commit()
+            else:    
+                db.execute(text('UPDATE customer SET store_id = "{}", first_name = "{}", last_name = "{}", email = "{}", active = "{}" '\
+                                'WHERE customer.customer_id = "{}"'.format(c_store_id, first_name, last_name, email, isactive, c_id)))
+                db.commit()
             
             customer_list = db.execute(text('SELECT customer.customer_id, customer.first_name, customer.last_name FROM customer'))
             
             return render_template('index/customers.html', customers = customer_list)
+        
+
+        # If return movie button is submitted, update database to reflect that the movie has been returned
+        if return_movie:
+            for tag in form_keys:
+                if 'return_movie_list' in tag:
+                    info_string = tag['return_movie_list']
+                    # [CID, RENTAL ID, TITLE]
+                    info_list = info_string.split('|')
+            
+            db.execute(text('UPDATE rental SET rental.return_date = now() WHERE rental.rental_id = {}'.format(info_list[1])))
+            db.commit()
         
         # If add form is posted, perform INSERT query
         if is_add_form:

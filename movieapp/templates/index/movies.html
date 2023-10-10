@@ -55,8 +55,25 @@
       <option value="{{ result['title'] }}">{{ result['title'] }}</option>
       {% endfor %}
     </select>
-    <input type="submit" value="Get Details" />
+    <input type="submit" name="get_details" value="Get Details" >
+    <input type="submit" name="rent_movie" value="Rent Movie" />
 </form>
+
+{% if m_info %}
+{% for m in m_info %}
+<form method="post" id="rental_form" name="rental_form">
+    <label for="m_title">Title</label>
+    <input type="text" id="m_title" name="m_title" value="{{ m['title'] }}" readonly>
+    <label for="m_first_name">First Name</label>
+    <input type="text" id="m_first_name" name="m_first_name" placeholder="First Name">
+    <label for="m_last_name">Last Name</label>
+    <input type="text" id="m_last_name" name="m_last_name" placeholder="Last Name">
+    <label for="m_c_id">Customer ID</label>
+    <input type="text" id="m_c_id" name="m_c_id" placeholder="Customer ID">
+    <input type="submit" value="Rent"/>
+</form>
+{% endfor %}
+{% endif %}
 
 {% if fields %}
 {% for field in fields %}

@@ -106,9 +106,28 @@
     <input type="text" id="postal_code" name="postal_code" value="{{ c['postal_code'] }}">
     <label for="active">Phone Number</label>
     <input type="text" id="phone" name="phone" value="{{ c['phone'] }}">
-    <input type="submit" value="Edit Details"/>
+    <input type="submit" name="edit_details" value="Edit Details">
+    <input type="submit" name="delete_cust" value="Delete Customer"/>
 </form>
+
+    <div class="form-center">
+        <form method="post">
+            <label for="return_movie_list"> Movies {{ c['first_name'] }} {{ c['last_name'] }} Has Rented</label>
+            <select name="return_movie_list" id="return_movie_list" required size="5" size="30">
+              {% for r in c_rented %}
+              {% if not r['return_date'] %}
+              <option value="{{ r['customer_id'] }}|{{ r['rental_id'] }}|{{ r['title'] }}">Title: {{ r['title'] }} (Not Returned)</option>
+              {% else %}
+              <option value="returned_{{ r['title'] }}" aria-readonly="true">Title {{ r['title'] }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+            <input type="submit" value="Return Movie"/>
+        </form>
+    </div>
+
 {% endfor %}
 {% endif %}
 </div>
+
 {% endblock %}
