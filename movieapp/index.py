@@ -1,11 +1,55 @@
 import functools
-from flask import (Blueprint, flash, g, redirect, render_template, request, session, url_for)
+from flask import (Blueprint, flash, g, redirect, render_template, request, session, url_for, send_file)
 from movieapp.db import get_db
 from sqlalchemy import text
+from io import BytesIO
+from reportlab.pdfgen import canvas
 
 # Create blueprint for the index view
 bp = Blueprint('index' ,__name__, url_prefix='/index')
 
+def generate_pdf_file(data_list):
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer)
+    p.setFontSize(8)
+    p.setTitle("Customer Rental Report")
+
+    text_lines = []
+    for row in data_list:
+        text_lines.append("Rental ID: {}, Rental Date: {}, Inventory ID: {}, Customer ID: {}, First Name: {}, Last Name: {}"\
+                     .format(row['rental_id'], row['rental_date'], row['inventory_id'], row['customer_id'], row['first_name'], row['last_name']))
+
+    text = p.beginText(20, 800)
+
+    for line in text_lines:
+        text.textLine(line)
+
+    p.drawText(text)    
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    return buffer
+
+
+@bp.route('/report', methods=('GET', 'POST'))
+def report():
+    db = get_db()
+    report_data = []
+    db_report = db.execute(text('SELECT rental.rental_id, rental.rental_date, rental.inventory_id, rental.customer_id, customer.first_name, customer.last_name '\
+                                'FROM (rental INNER JOIN customer ON rental.customer_id = customer.customer_id) WHERE return_date IS NULL ORDER BY customer_id; '))
+
+    for (rental_id, rental_date, inventory_id, customer_id, first_name, last_name) in db_report:
+        report_data.append({
+            'rental_id': rental_id,
+            'rental_date': rental_date,
+            'inventory_id': inventory_id,
+            'customer_id': customer_id,
+            'first_name': first_name,
+            'last_name': last_name
+        })
+
+    pdf_file = generate_pdf_file(report_data)
+    return send_file(pdf_file, as_attachment=True, download_name="Customer_Rental_Report.pdf")
 # Create different routes for each of the pages, and define the functionality of each
 # Home/Landing Page
 @bp.route('/home', methods=('GET', 'POST'))
