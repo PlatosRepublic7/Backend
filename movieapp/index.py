@@ -8,6 +8,8 @@ from reportlab.pdfgen import canvas
 # Create blueprint for the index view
 bp = Blueprint('index' ,__name__, url_prefix='/index')
 
+
+# Function to iterate through list of customer rental rows and generate a pdf file to be downloaded by the browser
 def generate_pdf_file(data_list):
     buffer = BytesIO()
     p = canvas.Canvas(buffer)
@@ -31,6 +33,10 @@ def generate_pdf_file(data_list):
     return buffer
 
 
+
+
+
+# The Report link, which when clicked, initiates a browser download of a pdf file containing curent rental records
 @bp.route('/report', methods=('GET', 'POST'))
 def report():
     db = get_db()
@@ -50,6 +56,11 @@ def report():
 
     pdf_file = generate_pdf_file(report_data)
     return send_file(pdf_file, as_attachment=True, download_name="Customer_Rental_Report.pdf")
+
+
+
+
+
 # Create different routes for each of the pages, and define the functionality of each
 # Home/Landing Page
 @bp.route('/home', methods=('GET', 'POST'))
@@ -127,7 +138,7 @@ def movies():
             elif k == 'm_title':
                 confirm_rental = True
         
-        flash(form_keys)
+        #flash(form_keys)
 
         if rent_movie:
             movie_info = db.execute(text('SELECT film.title, film.film_id FROM film WHERE film.title = "{}"'.format(form_keys[0]['sresults'])))
@@ -197,7 +208,7 @@ def customers():
             # Get the largest (newest) customer ID from the database
             db_count = db.execute(text('SELECT customer.customer_id FROM customer ORDER BY customer.customer_id DESC LIMIT 1'))
             # flash is for request verification (REMOVE BEFORE DONE)
-            flash(request_keys)
+            #flash(request_keys)
             
             return render_template('index/customers.html', add_cust = is_add_cust, db_count = db_count, customers = customer_list)
         
@@ -205,7 +216,7 @@ def customers():
         if is_cust_search:
             stext = request.args.get('customerq')
             
-            flash(request_keys)
+            #flash(request_keys)
             
             if stext == "":
                 return render_template('index/customers.html', customers = customer_list)
@@ -238,7 +249,7 @@ def customers():
                 delete_customer = True
             elif k == 'return_movie_list':
                 return_movie = True
-        flash(form_keys)
+        #flash(form_keys)
         
         # Customer List Logic and query
         if 'clist' in form_keys[0]:
@@ -275,6 +286,7 @@ def customers():
 
             # If the DELETE button was pressed, delete customer from database, otherwise UPDATE button was pressed
             if delete_customer:
+                db.execute(text('DELETE FROM rental WHERE customer_id = {}'.format(c_id)))
                 db.execute(text('DELETE FROM customer WHERE customer_id = {}'.format(c_id)))
                 db.commit()
             else:    
@@ -303,8 +315,6 @@ def customers():
             for tag in form_keys:
                 if 'a_store_id' in tag:
                     a_c_store_id = tag['a_store_id']
-                elif 'a_customer_id' in tag:
-                    a_c_id = tag['a_customer_id']
                 elif 'a_first_name' in tag:
                     a_first_name = tag['a_first_name']
                 elif 'a_last_name' in tag:
@@ -326,15 +336,34 @@ def customers():
 
             # INSERT statements require a three-step process, since there are foriegn keys connecting customer, address, city, and country tables
             # First INSERT into city table
-            db.execute(text('INSERT INTO city (city, country_id) VALUES ("{}", 103)'.format(a_city)))
-            db.commit()
+            city_query = db.execute(text('SELECT city_id FROM city WHERE city = "{}"'.format(a_city)))
+            cquery = []
+            for (city_id) in city_query:
+                cquery.append({
+                    'city_id': city_id
+                })
+            if len(cquery) == 0:
+                db.execute(text('INSERT INTO city (city, country_id) VALUES ("{}", 103)'.format(a_city)))
+                db.commit()
 
+
+            address_query = db.execute(text('SELECT address_id FROM address WHERE address = "{}"'.format(a_address)))
+            ad_query = []
+            for (address_id) in address_query:
+                ad_query.append({
+                    'address_id': address_id
+                })
+            if len(ad_query) == 0:
             # Second is to use the above city_id key to INSERT into the address table
-            db.execute(text('INSERT INTO address (address, city_id, district, postal_code, phone, location)'\
-                            ' VALUES ("{}", (SELECT city_id FROM city WHERE city="{}"),'\
-                            '"{}", "{}", "{}", POINT (-112.8185647 ,49))'.format(a_address, a_city, a_district, a_postal_code, a_phone)))
-            db.commit()
-
+                db.execute(text('INSERT INTO address (address, city_id, district, postal_code, phone, location)'\
+                                ' VALUES ("{}", (SELECT city_id FROM city WHERE city="{}"),'\
+                                '"{}", "{}", "{}", POINT (-112.8185647 ,49))'.format(a_address, a_city, a_district, a_postal_code, a_phone)))
+                db.commit()
+            else:
+                db.execute(text('INSERT INTO address (address, city_id, district, postal_code, phone, location)'\
+                                ' VALUES ("{}", (SELECT city_id FROM city WHERE city="{}"),'\
+                                '"{}", "{}", "{}", POINT (-112.8185647 ,49))'.format(ad_query[0]['address_id'], a_city, a_district, a_postal_code, a_phone)))
+                db.commit()
             # Third is to use the above address_id to INSERT into the customer table (we'll default into store 1 for the sake of this application)
             db.execute(text('INSERT INTO customer (store_id, first_name, last_name, email, address_id, active)'\
                             ' VALUES (1, "{}", "{}", "{}",'\

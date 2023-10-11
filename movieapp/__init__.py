@@ -1,6 +1,5 @@
 import os
-from flask import Flask, render_template, request
-from sqlalchemy import text
+from flask import Flask
 
 
 def create_app(test_config=None):
@@ -24,17 +23,8 @@ def create_app(test_config=None):
     from . import index
     app.register_blueprint(index.bp)
 
-    # For getting raw query data -- FOR QUERY VALIDATION ONLY
-    from . import db
-
-    @app.route('/sqla')
-    def sqlquery():
-        r_list = []
-        cnx = db.get_db()
-        result = cnx.execute(text('SELECT title, description, release_year, length, rating FROM film WHERE film.title="CAT CONEHEADS"'))
-        for row in result.mappings():
-            r_list.append(row)
-        db.close_db()
-        return str(r_list)
+    @app.route('/hello')
+    def hello():
+        return "Hello World"
     
     return app
